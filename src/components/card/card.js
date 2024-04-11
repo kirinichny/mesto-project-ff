@@ -1,15 +1,4 @@
 /**
- * Константы для определения позиции вставки карты.
- * @type {Object}
- * @property {string} END - Карта должна быть вставлен в конец контейнера.
- * @property {string} START - Карта должна быть вставлен в начало контейнера.
- */
-const INSERT_POSITION = {
-    END: 'end',
-    START: 'start'
-};
-
-/**
  * Создает карточку на основе шаблона.
  *
  * @param {Object} cardParams Объект с параметрами для создания карточки.
@@ -49,23 +38,6 @@ function createCard({cardData, cardTemplate, cardClasses, onClick, onDelete = de
 }
 
 /**
- * Вставляет карточку в указанный элемент.
- *
- * @param {Element} targetElement - Элемент DOM, в который будет вставлена карточка.
- * @param {Element} cardElement - Элемент карточки, который необходимо вставить.
- * @param {string} [insertPosition='end'] - Позиция вставки карточки.
- *                                          Допустимые значения: 'start', 'end'.
- *                                          По умолчанию 'end'.
- */
-function insertCard(targetElement, cardElement, insertPosition = 'end') {
-    if (insertPosition === 'start') {
-        targetElement.prepend(cardElement);
-    } else {
-        targetElement.append(cardElement);
-    }
-}
-
-/**
  * Удаляет указанную карточку.
  *
  * @param {Element} cardElement - Элемент карточки, который необходимо удалить.
@@ -84,4 +56,4 @@ function toggleLikeState(evt, likeIsActiveClass) {
     evt.target.classList.toggle(likeIsActiveClass);
 }
 
-export {INSERT_POSITION, createCard, insertCard, deleteCard};
+export {createCard, deleteCard};

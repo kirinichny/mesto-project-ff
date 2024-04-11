@@ -1,7 +1,9 @@
 import '../pages/index.css';
 import {initialCards} from "./card-data";
-import {INSERT_POSITION, createCard, insertCard} from "./card";
-import {openModal, closeModal, setImageModalData} from "./modal";
+import {createCard} from "./card/card";
+import {openModal, closeModal} from "./modal/modal";
+import {MODAL_CLASS} from "./modal/modalConstants";
+import {ELEMENT_INSERT_POSITION} from "./commonConstants";
 
 const placesList = document.querySelector('.places__list');
 const cardTemplate = document.querySelector('#card-template').content.children[0];
@@ -9,25 +11,20 @@ const cardTemplate = document.querySelector('#card-template').content.children[0
 const profileTitle = document.querySelector('.profile__title');
 const profileDescription = document.querySelector('.profile__description');
 
-const editProfileButton = document.querySelector('.profile__edit-button');
-const addButton = document.querySelector('.profile__add-button');
+const buttonEditProfile = document.querySelector('.profile__edit-button');
+const buttonAdd = document.querySelector('.profile__add-button');
 
-const editProfileModal = document.querySelector('.popup_type_edit');
-const newCardModal = document.querySelector('.popup_type_new-card');
-const imageModal = document.querySelector('.popup_type_image');
+const modalEditProfile = document.querySelector('.popup_type_edit');
+const modalNewCard = document.querySelector('.popup_type_new-card');
+const modalImage = document.querySelector('.popup_type_image');
 const allModalWindows = document.querySelectorAll('.popup');
 
-const editProfileForm = document.forms['edit-profile'];
-const newCardForm = document.forms['new-place'];
+const imageModal = modalImage.querySelector('.popup__image');
+const captionModal = modalImage.querySelector('.popup__caption');
 
-const modalClasses = {
-    isOpened: "popup_is-opened",
-    closeButton: "popup__close"
-};
-const imageModalClasses = {
-    image: 'popup__image',
-    caption: 'popup__caption'
-};
+const formEditProfile = document.forms['edit-profile'];
+const formNewCard = document.forms['new-place'];
+
 const cardClasses = {
     image: "card__image",
     title: "card__title",
@@ -36,16 +33,30 @@ const cardClasses = {
     likeButtonIsActive: "card__like-button_is-active"
 }
 
+function insertElement(targetElement, cardElement, insertPosition = 'end') {
+    if (insertPosition === 'start') {
+        targetElement.prepend(cardElement);
+    } else {
+        targetElement.append(cardElement);
+    }
+}
+
+function setModalImageData(imageData) {
+    imageModal.src = imageData.link;
+    imageModal.alt = imageData.name;
+    captionModal.textContent = imageData.name;
+}
+
 function renderImageModal(imageData) {
-    setImageModalData(imageModal, imageData, imageModalClasses)
-    openModal(imageModal, modalClasses.isOpened);
+    setModalImageData(modalImage, imageData)
+    openModal(modalImage);
 }
 
 function renderCard(cardData, insertPosition) {
     const cardParams = {cardData, cardTemplate, cardClasses, onClick: renderImageModal}
     const cardElement = createCard(cardParams);
 
-    insertCard(placesList, cardElement, insertPosition);
+    insertElement(placesList, cardElement, insertPosition);
 }
 
 function setProfileFormFields(editProfileForm, profileTitle, profileDescription) {
@@ -63,7 +74,7 @@ function handleProfileFormSubmit(evt, profileTitleElement, profileDescriptionEle
     profileTitleElement.textContent = newTitle;
     profileDescriptionElement.textContent = newDescription;
 
-    closeModal(editProfileModal, modalClasses.isOpened);
+    closeModal(modalEditProfile);
 }
 
 function handleNewCardFormSubmit(evt) {
@@ -72,40 +83,40 @@ function handleNewCardFormSubmit(evt) {
     const form = evt.target;
     const cardData = {name: form['place-name'].value, link: form['link'].value}
 
-    renderCard(cardData, INSERT_POSITION.START);
-    closeModal(newCardModal, modalClasses.isOpened);
+    renderCard(cardData, ELEMENT_INSERT_POSITION.START);
+    closeModal(modalNewCard);
     form.reset();
 }
 
 function initializeCards(cards) {
     cards.forEach(cardData => {
-        renderCard(cardData, INSERT_POSITION.END);
+        renderCard(cardData, ELEMENT_INSERT_POSITION.END);
     });
 }
 
 initializeCards(initialCards);
-addButton.addEventListener('click', () => {
-    openModal(newCardModal, modalClasses.isOpened);
+buttonAdd.addEventListener('click', () => {
+    openModal(modalNewCard);
 });
 
-editProfileButton.addEventListener('click', () => {
-    setProfileFormFields(editProfileForm, profileTitle.textContent, profileDescription.textContent);
-    openModal(editProfileModal, modalClasses.isOpened);
+buttonEditProfile.addEventListener('click', () => {
+    setProfileFormFields(formEditProfile, profileTitle.textContent, profileDescription.textContent);
+    openModal(modalEditProfile);
 });
 
-editProfileForm.addEventListener('submit', (evt) => {
+formEditProfile.addEventListener('submit', (evt) => {
     handleProfileFormSubmit(evt, profileTitle, profileDescription);
 });
 
-newCardForm.addEventListener('submit', handleNewCardFormSubmit);
+formNewCard.addEventListener('submit', handleNewCardFormSubmit);
 
 allModalWindows.forEach((modal) => {
     modal.addEventListener('click', function (evt) {
-        const isClickOnCloseButton = evt.target.classList.contains(modalClasses.closeButton);
+        const isClickOnCloseButton = evt.target.classList.contains(MODAL_CLASS.CLOSE_BUTTON);
         const isClickOnOverlay = evt.target === this;
 
         if (isClickOnCloseButton || isClickOnOverlay) {
-            closeModal(modal, modalClasses.isOpened);
+            closeModal(modal);
         }
     });
 });
