@@ -48,7 +48,7 @@ function setModalImageData(imageData) {
 }
 
 function renderImageModal(imageData) {
-    setModalImageData(modalImage, imageData)
+    setModalImageData(modalImage, imageData);
     openModal(modalImage);
 }
 
