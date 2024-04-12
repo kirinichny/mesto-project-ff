@@ -4,10 +4,10 @@ import {MODAL_CLASS, MODAL_CLOSE_KEY} from "./modalConstants";
  * Обрабатывает нажатие клавиши для закрытия модального окна.
  *
  * @param {KeyboardEvent} evt - Событие нажатия клавиши.
- * @param {Element} modalElement - Элемент модального окна, которое будет закрыто при нажатии клавиши.
  */
-function handleCloseKeyPress(evt, modalElement) {
+function handleCloseKeyPress(evt) {
     if (evt.key === MODAL_CLOSE_KEY) {
+        const modalElement = evt.target.querySelector(`.${MODAL_CLASS.IS_OPENED}`)
         closeModal(modalElement);
     }
 }
@@ -19,11 +19,7 @@ function handleCloseKeyPress(evt, modalElement) {
  */
 function openModal(modalElement) {
     modalElement.classList.add(MODAL_CLASS.IS_OPENED);
-
-    modalElement.handleCloseKeyPress = handleCloseKeyPress;
-    document.addEventListener('keydown', (evt, modalElement) => {
-        handleCloseKeyPress(evt, modalElement);
-    });
+    document.addEventListener('keydown', handleCloseKeyPress);
 }
 
 /**
