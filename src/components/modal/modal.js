@@ -7,7 +7,7 @@ import {MODAL_CLASS, MODAL_CLOSE_KEY} from "./modalConstants";
  */
 function handleCloseKeyPress(evt) {
     if (evt.key === MODAL_CLOSE_KEY) {
-        const modalElement = evt.target.querySelector(`.${MODAL_CLASS.IS_OPENED}`)
+        const modalElement = document.querySelector(`.${MODAL_CLASS.IS_OPENED}`)
         closeModal(modalElement);
     }
 }

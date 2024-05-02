@@ -1,14 +1,4 @@
 /**
- * Проверяет, содержит ли список элементов хотя бы один невалидный элемент.
- *
- * @param {HTMLInputElement[]} inputList - Массив HTML элементов для проверки.
- * @return {boolean} Возвращает true, если хотя бы один элемент невалиден, иначе false.
- */
-function hasInvalidInput(inputList) {
-    return inputList.some(inputElement => !inputElement.validity.valid);
-}
-
-/**
  * Отображает сообщение об ошибке для неправильно заполненного элемента формы.
  *
  * @param {Object} params - Объект с параметрами функции.
@@ -68,14 +58,16 @@ function toggleInputError({formElement, inputElement, errorClasses}) {
  * Включает/выключает кнопку отправки формы в зависимости от валидности всех полей ввода формы.
  *
  * @param {Object} params - Объект с параметрами функции.
- * @param {HTMLInputElement[]} params.inputList - Список всех элементов формы.
+ * @param {HTMLElement} params.formElement - Форма.
  * @param {Element} params.buttonElement - Кнопка отправки формы.
  * @param {string} params.inactiveButtonClass - Класс стиля для неактивной кнопки.
  */
-function toggleButtonState({inputList, buttonElement, inactiveButtonClass}) {
-    if (hasInvalidInput(inputList)) {
+function toggleButtonState({formElement, buttonElement, inactiveButtonClass}) {
+    if (!formElement.checkValidity()) {
+        buttonElement.disabled = true;
         buttonElement.classList.add(inactiveButtonClass);
     } else {
+        buttonElement.disabled = false;
         buttonElement.classList.remove(inactiveButtonClass);
     }
 }
@@ -99,7 +91,7 @@ function setEventListeners({formElement, validationParams}) {
     inputList.forEach((inputElement) => {
         inputElement.addEventListener('input', function () {
             toggleInputError({formElement, inputElement, errorClasses});
-            toggleButtonState({inputList, buttonElement, inactiveButtonClass});
+            toggleButtonState({formElement, buttonElement, inactiveButtonClass});
         });
     });
 }
@@ -134,7 +126,7 @@ function clearValidation(formElement, validationParams) {
 
 
     inputList.forEach(inputElement => hideInputError({formElement, inputElement, errorClasses}));
-    toggleButtonState({inputList, buttonElement, inactiveButtonClass});
+    toggleButtonState({formElement, buttonElement, inactiveButtonClass});
 }
 
 export {enableValidation, clearValidation}

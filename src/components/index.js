@@ -14,7 +14,7 @@ import {
 } from "./api/api"
 
 import {MODAL_CLASS} from "./modal/modalConstants";
-import {ELEMENT_INSERT_POSITION} from "./commonConstants";
+import {ELEMENT_INSERT_POSITION, UI_TEXTS} from "./commonConstants";
 
 const placesList = document.querySelector('.places__list');
 const cardTemplate = document.querySelector('#card-template').content.children[0];
@@ -41,8 +41,10 @@ const formEditProfile = document.forms['edit-profile'];
 const formNewCard = document.forms['new-place'];
 const formConfirmDeleteCard = document.forms['confirm-delete-card'];
 
-let cardIdToDelete;
-let cardElementToDelete;
+const cardToDelete = {
+    id: null,
+    element: null
+};
 
 const cardClasses = {
     image: "card__image",
@@ -70,12 +72,6 @@ function insertElement(targetElement, cardElement, insertPosition = 'end') {
     }
 }
 
-function setModalImageData(imageData) {
-    imageModal.src = imageData.link;
-    imageModal.alt = imageData.name;
-    captionModal.textContent = imageData.name;
-}
-
 function renderUserProfile(userData) {
     profileImage.style.backgroundImage = `url(${userData.avatar})`;
     profileTitle.textContent = userData.name;
@@ -83,13 +79,16 @@ function renderUserProfile(userData) {
 }
 
 function renderImageModal(imageData) {
-    setModalImageData(imageData);
+    imageModal.src = imageData.link;
+    imageModal.alt = imageData.name;
+    captionModal.textContent = imageData.name;
+
     openModal(modalImage);
 }
 
 function renderConfirmDeleteCardModal(cardId, cardElement) {
-    cardIdToDelete = cardId;
-    cardElementToDelete = cardElement;
+    cardToDelete.id = cardId;
+    cardToDelete.element = cardElement;
     openModal(modalConfirmDeleteCard);
 }
 
@@ -109,11 +108,6 @@ function renderCard(cardData, insertPosition, currentUserId) {
     insertElement(placesList, cardElement, insertPosition);
 }
 
-function setProfileFormFields(editProfileForm, profileTitle, profileDescription) {
-    editProfileForm.elements['name'].value = profileTitle;
-    editProfileForm.elements['description'].value = profileDescription;
-}
-
 function handleUpdateAvatarFormSubmit(evt) {
     evt.preventDefault();
 
@@ -122,7 +116,7 @@ function handleUpdateAvatarFormSubmit(evt) {
     const saveButtonOriginalText = saveButton.textContent;
     const avatarLink = form['link'].value;
 
-    saveButton.textContent += '...';
+    saveButton.textContent = UI_TEXTS.SAVE_IN_PROGRESS;
 
     updateAvatar(avatarLink).then(res => {
         profileImage.style.backgroundImage = `url(${res.avatar})`;
@@ -146,7 +140,7 @@ function handleProfileFormSubmit(evt) {
         about: form.description.value
     }
 
-    saveButton.textContent += '...';
+    saveButton.textContent = UI_TEXTS.SAVE_IN_PROGRESS;
 
     updateCurrentUser(userData).then(res => {
         profileTitle.textContent = res.name;
@@ -170,7 +164,7 @@ function handleNewCardFormSubmit(evt) {
         link: form['link'].value
     }
 
-    saveButton.textContent += '...';
+    saveButton.textContent = UI_TEXTS.SAVE_IN_PROGRESS;
 
     addCard(cardData).then(res => {
         renderCard(res, ELEMENT_INSERT_POSITION.START, res.owner._id);
@@ -190,10 +184,10 @@ function handleConfirmDeleteCardFormSubmit(evt) {
     const button = evt.submitter;
     const buttonOriginalText = button.textContent;
 
-    button.textContent = 'Удаление...';
+    button.textContent = UI_TEXTS.DELETE_IN_PROGRESS;
 
-    deleteCard(cardIdToDelete).then(res => {
-        cardElementToDelete.remove();
+    deleteCard(cardToDelete.id).then(res => {
+        cardToDelete.element.remove();
         closeModal(modalConfirmDeleteCard);
     }).catch(err => {
         console.log(err)
@@ -211,7 +205,9 @@ Promise.all([getCurrentUser(), getCards()])
     .then(([currentUserData, cardsData]) => {
         renderUserProfile(currentUserData);
         initializeCards(cardsData, currentUserData._id);
-    });
+    }).catch(err => {
+    console.log(err)
+});
 
 enableValidation(validationParams);
 
@@ -220,8 +216,10 @@ profileImage.addEventListener('click', () => {
     openModal(modalUpdateAvatar);
 });
 buttonEditProfile.addEventListener('click', () => {
+    formEditProfile.elements['name'].value = profileTitle.textContent;
+    formEditProfile.elements['description'].value = profileDescription.textContent;
+
     clearValidation(formEditProfile, validationParams);
-    setProfileFormFields(formEditProfile, profileTitle.textContent, profileDescription.textContent);
     openModal(modalEditProfile);
 });
 buttonAdd.addEventListener('click', () => {
@@ -238,9 +236,16 @@ formConfirmDeleteCard.addEventListener('submit', handleConfirmDeleteCardFormSubm
 allModalWindows.forEach((modal) => {
     modal.addEventListener('click', function (evt) {
         const isClickOnCloseButton = evt.target.classList.contains(MODAL_CLASS.CLOSE_BUTTON);
+
+        if (isClickOnCloseButton) {
+            closeModal(modal);
+        }
+    });
+
+    modal.addEventListener('mousedown', function (evt) {
         const isClickOnOverlay = evt.target === this;
 
-        if (isClickOnCloseButton || isClickOnOverlay) {
+        if (isClickOnOverlay) {
             closeModal(modal);
         }
     });
